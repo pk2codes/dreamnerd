@@ -9,7 +9,14 @@
     "lint:fix": "npm run lint -- --fix",
     "start:dev": "nodemon",
     "build": "rimraf ./build && npm run lint && npm run test && tsc",
-    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write"
+    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "init": "npm run docker:pulldb && npm run docker:setupPersistence && npm run docker:run && npm run db:create && npm run db:create:schema",
+    "docker:pulldb": "npx docker pull postgres",
+    "docker:setupPersistence": "npx mkdir -p $HOME/docker/volumes/postgre",
+    "docker:run": "npx docker run --rm --name pg-docker -e POSTGRES_PASSWORD=docker -d -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres",
+    "db:create": "npx psql -h localhost -U postgres -d postgres -c 'create database dreamnerd'",
+    "db:create:schema": "npx mikro-orm schema:create -r",
+    "db:connect": "psql -h localhost -U postgres -d dreamnerd"
   },
   "keywords": [],
   "author": "",
@@ -22,10 +29,24 @@
     "jest": "^26.6.3",
     "nodemon": "^2.0.6",
     "rimraf": "^3.0.2",
+    "shx": "^0.3.3",
     "ts-node": "^9.0.0",
     "typescript": "^4.1.2"
   },
   "dependencies": {
-    "@types/jest": "^26.0.15"
+    "@mikro-orm/core": "^4.3.0",
+    "@mikro-orm/postgresql": "^4.3.0",
+    "@types/jest": "^26.0.15",
+    "@types/pg": "^7.14.7",
+    "commander": "^6.2.0",
+    "mikro-orm": "^4.3.0",
+    "pg": "^8.5.1"
+  },
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./src/mikro-orm.config.ts",
+      "./dist/mikro-orm.config.js"
+    ]
   }
 }
